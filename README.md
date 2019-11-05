@@ -17,12 +17,15 @@ Implicit Grant Flow の実装部分には
 [Microsoft Authentication Library (MSAL) for JS](https://github.com/AzureAD/microsoft-authentication-library-for-js)
 を使用しています。
 
-# プラットフォームの構築
+# セットアップ手順
 
-サンプルの実行環境としては以下が必要になります。
+サンプルの実行環境となるプラットフォームとしては以下が必要になります。
+
 - SPA をホストする Storage Account
 - Web API を提供する Functions
 - 上記２つを表す Azure Active Directory のアプリケーション
+
+これらを準備したのちに、アプリケーションコンテンツを配置していきます。
 
 ## SPA の構成
 
@@ -99,5 +102,67 @@ GUID 形式のアプリケーション ID （クライアントID）と **承認
 ![Allow access api](./images/function-publish-api.png)
 
 このスコープを表す URI も後ほど必要になりますので控えておいてください。
+
+## アプリケーションコンテンツの配置
+
+### Web API としての Function 関数の作成
+
+まず Http Trigger を使用する C# スクリプトの関数を作成します。
+サンプルコードは [こちら](./api)に配置していますが、App Service 認証によってセットされたリクエストヘッダーからユーザー情報を読み取り、挨拶文を返すだけのシンプルな内容にしてあります。
+なお App Service 認証が有効になっていますので、ポータル画面からはテスト実行することができません。
+
+```c#
+public static async Task<IActionResult> Run(HttpRequest req, ILogger log)
+{
+    log.LogInformation("C# HTTP trigger function processed a request.");
+    var prinKey = "X-MS-CLIENT-PRINCIPAL-NAME";
+    var name = req.Headers.Keys.Contains(prinKey) ? req.Headers[prinKey].ToString() : "anonymous" ;
+    return new OkObjectResult(new { Message = $"Success Functions api call by {name} !!!" } );
+}
+```
+
+関数が作成できたら default の Function Key を含んだ URL をコピーして控えておいてください。
+
+![function url](./images/function-url.png)
+
+### SPA コンテンツの配置
+
+SPA 用のコンテンツは [こちら](./spa) に配置してありますが、設定値を上記で作成した環境に合わせる必要があります。
+`param.js` という名前のファイルを作成し、以下の内容をここまで控えた設定値に書き換えてください。
+`msalConfig` セクションが認証に使用する情報ですので、静的 Web サイトホスティングを登録した際のアプリケーションの情報を入力します。
+`api` セクションが Web API を呼びだす際に使用する情報ですので、Function を作成・登録した際の値を入力します。
+
+``` javascript
+const param = {
+    msalConfig : {
+        auth: {
+            clientId: "clientid-of-spa-application",
+            authority: "https://login.microsoftonline.com/tenantid-of-azure-ad",
+            validateAuthority: true
+        },
+        cache: {
+            cacheLocation: "localStorage",
+            storeAuthStateInCookie: false
+        }
+    },
+
+    login : {
+        token_request : {
+            scopes: ["openid", "profile", "User.Read"]
+        }
+    },
+
+    api : {
+        token_request : {
+            scopes: ["https://functionAppName.azurewebsites.net/user_impersonation"]
+        },
+        url : "https://functionAppName.azurewebsites.net/api/functionName?code=yourFunctionKey"
+    }
+}
+```
+
+`param.js` ファイルを作成したら [index.htm](./spa/index.htm)および[auth.js](./spa/auth.js) ファイルと共に、
+ストレージアカウントの `$web` コンテナにアップロードしてください。
+
 
 
