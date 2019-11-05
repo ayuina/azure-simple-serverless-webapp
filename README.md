@@ -125,7 +125,7 @@ public static async Task<IActionResult> Run(HttpRequest req, ILogger log)
 
 ![function url](./images/function-url.png)
 
-### SPA コンテンツの配置
+### ユーザーインタフェースとしてのSPA コンテンツの配置
 
 SPA 用のコンテンツは [こちら](./spa) に配置してありますが、設定値を上記で作成した環境に合わせる必要があります。
 `param.js` という名前のファイルを作成し、以下の内容をここまで控えた設定値に書き換えてください。
@@ -163,6 +163,24 @@ const param = {
 
 `param.js` ファイルを作成したら [index.htm](./spa/index.htm)および[auth.js](./spa/auth.js) ファイルと共に、
 ストレージアカウントの `$web` コンテナにアップロードしてください。
+
+## 動作確認
+
+In Private ブラウズなどの認証キャッシュを持たない状態のブラウザを開きm、Blob のプライマリエンドポイント URL にアクセスしてください。
+`index.htm` ドキュメントのロード時に前述の `param.js` に記入した Login 用の Token Request に応じて認証要求を行いますが、
+まだ認証情報を持っていないのでポップアップ画面が表示され、ユーザー認証を要求されます。
+正しくユーザー認証が成功すると `identity token` が発行されます。
+実装は [auth.js](./spa/auth.js) の `signIn()` メソッドを参照してください。
+
+次に Function API を呼び出すボタンを押下すると、`param.js` に記入した api 用の Token Request を使用して Web API へのアクセス認可要求を行います。
+このタイミングでは identity token を保有していますので自動的に `access token` が取得できます。
+ここで取得した Access Token を `Authorization` HTTP Header にセットすることで、Function API の呼び出しが可能になります。
+実装は [auth.js](./spa/auth.js) の `callApi()` メソッドを参照してください。
+
+動作確認後に ブラウザのデバッガーで Console を表示すると、取得した `id_token` や `access_token` の値が確認できます。
+
+![implicit grant flow](./images/implicit-grant-flow.png)
+
 
 
 
