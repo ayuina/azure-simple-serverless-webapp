@@ -1,0 +1,1 @@
+# azure-simple-serverless-webapp
