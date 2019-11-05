@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SPA Demo</title>
+    <script src="https://alcdn.msauth.net/lib/1.1.3/js/msal.min.js"></script>
+    <script type="text/javascript" src="./param.js"> </script>
+    <script type="text/javascript" src="./auth.js"> </script>
+    
+</head>
+<body>
+    <h2>Welcome to MSAL.js Quickstart</h2><br/>
+    <h4 id="WelcomeMessage"></h4>
+    <button id="apicallbutton" disabled='true' >Call Functions API</button><br/><br/>
+    <pre id="json"></pre>
+
+    <div>
+        <h2>Refference</h2>
+        <ul>
+            <li><a href="http://aka.ms/aadv2">Microsoft Authentication Library (MSAL) for JS</a></li>
+            <li><a href="https://github.com/AzureAD/microsoft-authentication-library-for-js/">GitHub </a> </li>
+            <li><a href="https://docs.microsoft.com/ja-jp/azure/active-directory/develop/v2-oauth2-implicit-grant-flow">Implicit Grant Flow</a></li>
+            <li><a href="https://docs.microsoft.com/ja-jp/azure/active-directory/develop/tutorial-v2-javascript-spa">Tutorial</a></li>
+        </ul>
+    </div>
+
+    <script type="text/javascript">
+        signIn(function ( signinResponse ) {
+            console.log(signinResponse);
+            alert("Login Success : " + msalagent.getAccount().userName);
+
+            var button = document.getElementById("apicallbutton");
+            button.addEventListener('click', function(){
+                callApi();
+            });
+            button.disabled = false;
+        });
+    </script>
+
+</body>
+</html>
