@@ -58,11 +58,46 @@ Azure Portal の Marketplace から
 
 ![registered application](./images/blob-register-app-2.png)
 
-登録が完了すると GUID 形式のアプリケーション ID が生成されていますので、この値を控えておきます。
+登録が完了すると GUID 形式のアプリケーション ID （クライアントID）が生成されていますので、この値を控えておきます。
 同じ画面でアプリケーションが登録された Azure AD テナントの ID も表示されていますので、こちらの値も控えておきます。
 
 ## Web API の構成
 
+### Function App の作成
 
+Azure Portal の  Marketplace から 
+[Function App](https://portal.azure.com/#create/Microsoft.FunctionApp)
+を作成します。以下のオプションを指定してください。
+
+- 公開方法 ： コード
+- ランタイムスタック : .NET Core 
+
+### オリジン間リソース共有の有効化
+
+作成した Function App でホストされる Web API をブラウザ上で動作する SPA から呼び出すことになるわけですが、
+SPA の提供ドメインと Function App の提供ドメインが異なるため、ブラウザの CORS : Cross Origin Resource Sharing 制限に引っかかってしまいます。
+Functon App の プラットフォーム機能の **CORS** 設定画面から、**許可される元のドメイン** として前述の静的 Web ホスティングの `プライマリエンドポイント` を登録してください。
+
+![CORS](./images/function-cors.png)
+
+
+### 認証の有効化
+
+作成した Function は認証が有効になっていないので、このままではアクセスコードを知っていれば誰でもアクセスできてしまします。
+プラットフォーム機能として **App Service 認証を有効** にし、認証されていないリクエストは **Azure Active Directory でのログイン** を強制する様に設定します。
+Azure Active Directory 認証の構成画面では **簡易モード** を使用して **新しい AD アプリを作成** します
+
+![Easy Auth](./images/function-easy-auth.png)
+
+### API アクセスの許可
+
+上記の様に認証を設定すると Function App も Azure AD のアプリケーションとして登録されますので、この API に対するアクセスを SPA に対して許可します。
+**承認済みのクライアントアプリケーション** として、静的 Web ホスティングを Azure AD アプリケーションとして登録した際に生成された
+GUID 形式のアプリケーション ID （クライアントID）と **承認済みのスコープ** を追加します。
+ここでは **user_impersonation** という既定で作成されているスコープのみで大丈夫です。
+
+![Allow access api](./images/function-publish-api.png)
+
+このスコープを表す URI も後ほど必要になりますので控えておいてください。
 
 
