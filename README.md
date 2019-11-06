@@ -1,4 +1,4 @@
-# Azure サーバーレス アプリケーション （シンプル版）
+# Azure サーバーレス Web アプリケーション （シンプル版）
 
 本家のドキュメントには
 [Azure 上のサーバーレス Web アプリケーションの作成](https://docs.microsoft.com/ja-jp/azure/architecture/reference-architectures/serverless/web-app)
